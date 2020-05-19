@@ -5,12 +5,9 @@
 # list of random numbers. The user will select the algorithm and the amount of
 # numbers to be sorted.
 
-#TODO GRAY OUT BUTTONS UNTIL THE ALGORITHM FINISHES
-
 from tkinter import *
 import random
 import time
-
 
 class window:
     def __init__(self, screen, canvas_width, canvas_height):
@@ -21,7 +18,8 @@ class window:
         displacement = 0 # Used to move over the bars the correct amount
         move = self.width // len(self.array) # Amount to move over each time
         for i in range(len(self.array)):
-            self.canvas.create_rectangle(displacement, self.height, displacement + move, self.array[i], fill = color)
+            self.canvas.create_rectangle(displacement, self.height,
+                            displacement + move, self.array[i], fill = color)
             displacement = displacement + move
     def create_rand_list(self, list_size):
         result = []
@@ -40,15 +38,20 @@ class window:
         def spin_callback():
             self.array = self.create_rand_list(int(spin.get()))
             self.refresh()
-        spin = Spinbox(self.screen, textvariable = spin_variable, from_ = 5, to = 500, command = spin_callback)
-        #algorithms = ["Insertion Sort", "Quick Sort", "Bubble Sort", "Merge Sort"]
+        spin = Spinbox(self.screen, textvariable = spin_variable, from_ = 5,
+                    to = 500, command = spin_callback)
         option_variable = StringVar()
         option_variable.set("Insertion Sort")
         option_menu = OptionMenu(self.screen, option_variable,
                                 "Insertion Sort", "Quick Sort", "Bubble Sort",
-                                "Merge Sort", "Shell Sort", "Selection Sort")
+                                "Merge Sort", "Shell Sort", "Selection Sort",
+                                "Heap Sort")
+        option_menu.config(bg = "yellow")
         def button_callback():
-            #self.array = self.create_rand_list(int(spin.get()))
+            go_button["state"] = DISABLED
+            generate_button["state"] = DISABLED
+            spin["state"] = DISABLED
+            option_menu["state"] = DISABLED
             if option_variable.get() == "Insertion Sort":
                 insertion_sort(self)
             elif option_variable.get() == "Quick Sort":
@@ -61,14 +64,28 @@ class window:
                 shell_sort(self)
             elif option_variable.get() == "Selection Sort":
                 selection_sort(self)
+            elif option_variable.get() == "Heap Sort":
+                heap_sort(self)
             self.create_visual("green")
-        go_button = Button(self.screen, text = "GO!", command = button_callback)
+            go_button["state"] = "normal"
+            generate_button["state"] = "normal"
+            spin["state"] = "normal"
+            option_menu["state"] = "normal"
+        go_button = Button(self.screen, text = "GO!", command = button_callback,
+                        bg = "yellow", activebackground = "white")
+        def generate_cb():
+            self.array = self.create_rand_list(int(spin.get()))
+            self.refresh()
+        generate_button = Button(self.screen, text = "Generate New List",
+                        command = generate_cb, bg = "yellow",
+                        activebackground = "white")
         label = Label(self.screen, text = "Amount of items:\n(MAX: 500)")
+        generate_button.place(x = 180, y = 9)
         label.place(x = 300, y = 10)
         spin.place(x = 400, y = 12)
         option_menu.place(x = 550, y = 7)
         go_button.place(x = 675, y = 9)
-        self.canvas = Canvas(self.screen, bg = "white", width = self.width, height = self.height)
+        self.canvas = Canvas(self.screen, width = self.width, height = self.height)
         self.array = self.create_rand_list(100)
         self.refresh()
         self.canvas.place(x = 3, y = 50)
@@ -93,19 +110,19 @@ def quick_sort(window, low, high):
             if window.array[j] > pi:
                 i += 1
                 window.array[i], window.array[j] = window.array[j], window.array[i]
-            window.refresh()
-        window.array[i + 1], window.array[high] = window.array[high], window.array[i + 1] 
+                window.refresh()
+        window.array[i + 1], window.array[high] = (window.array[high],
+                                                    window.array[i + 1])
         partition = i + 1
-        window.refresh()
-
         quick_sort(window, low, partition - 1)
         quick_sort(window, partition + 1, high)
 def bubble_sort(window):
     for i in range(len(window.array) - 1):
         for j in range(len(window.array) - i - 1):
             if window.array[j] < window.array[j + 1]:
-                window.array[j], window.array[j + 1] = window.array[j + 1], window.array[j]
-            window.refresh()
+                window.refresh()
+                window.array[j], window.array[j + 1] = (window.array[j + 1],
+                                                        window.array[j]) 
 def merge_sort(window, low, high):
     if low < high:
         middle = (low + high) // 2
@@ -122,15 +139,12 @@ def merge_sort(window, low, high):
             else: 
                 temp_arr.append(window.array[j]) 
                 j += 1
-            window.refresh()
         while i <= middle:   
             temp_arr.append(window.array[i]) 
             i += 1
-            window.refresh()
         while j <= high:  
             temp_arr.append(window.array[j]) 
             j += 1
-            window.refresh()
         j = 0       
         for i in range(low, high + 1):   
             window.array[i] = temp_arr[j] 
@@ -145,7 +159,6 @@ def shell_sort(window):
             while (j >= gap and window.array[j - gap] < temp):
                 window.array[j] = window.array[j - gap]
                 j -= gap
-                window.refresh()
             window.array[j] = temp
             window.refresh()
         gap = gap // 2
@@ -156,7 +169,27 @@ def selection_sort(window):
             if window.array[j] > window.array[low]:
                 low = j
         window.array[low], window.array[i] = window.array[i], window.array[low]
-        time.sleep(0.05)
+        time.sleep(0.04)
+        window.refresh()
+# Helper function to be used along with heap_sort()
+def heap(array, length, num):
+    high = num
+    left = (2 * num) + 1
+    right = (2 * num) + 2
+    if left < length and array[left] < array[high]:
+        high = left
+    if right < length and array[right] < array[high]:
+        high = right
+    if not high == num:
+        array[num],array[high] = array[high], array[num]
+        heap(array, length, high)
+def heap_sort(window):
+    for i in range(len(window.array) // 2 - 1, -1, -1):
+        heap(window.array, len(window.array), i)
+        window.refresh()
+    for i in range(len(window.array) - 1, 0, -1):
+        window.array[0], window.array[i] = window.array[i], window.array[0]
+        heap(window.array, i, 0)
         window.refresh()
 
 def main():
