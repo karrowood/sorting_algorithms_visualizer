@@ -1,5 +1,5 @@
 # Kyle Arrowood
-# 5/18/2020
+# 5/19/2020
 # A sorting visualizer
 # This program will show how different sorting algorithms work on an unsorted
 # list of random numbers. The user will select the algorithm and the amount of
@@ -15,11 +15,11 @@ class window:
         self.screen = screen
         self.width = canvas_width
         self.height = canvas_height
-    def create_visual(self):
+    def create_visual(self, color):
         displacement = 0 # Used to move over the bars the correct amount
         move = self.width // len(self.array) # Amount to move over each time
         for i in range(len(self.array)):
-            self.canvas.create_rectangle(displacement, self.height, displacement + move, self.array[i], fill = "white")
+            self.canvas.create_rectangle(displacement, self.height, displacement + move, self.array[i], fill = color)
             displacement = displacement + move
     def create_rand_list(self, list_size):
         result = []
@@ -29,9 +29,8 @@ class window:
         return result
     def refresh(self):
         self.canvas.delete("all")
-        self.create_visual()
+        self.create_visual("red")
         self.canvas.update()
-    
     def create_window(self):
         self.screen.title("Sorting Algorithm Visualizer")
         spin_variable = IntVar()
@@ -45,25 +44,29 @@ class window:
         option_variable.set("Insertion Sort")
         option_menu = OptionMenu(self.screen, option_variable,
                                 "Insertion Sort", "Quick Sort", "Bubble Sort",
-                                "Merge Sort")
+                                "Merge Sort", "Shell Sort", "Selection Sort")
         def button_callback():
             #self.array = self.create_rand_list(int(spin.get()))
             if option_variable.get() == "Insertion Sort":
                 insertion_sort(self)
             elif option_variable.get() == "Quick Sort":
-                pass
+                quick_sort(self, 0, len(self.array) - 1)
             elif option_variable.get() == "Bubble Sort":
                 bubble_sort(self)
             elif option_variable.get() == "Merge Sort":
-                pass
-            # Add Part that changes color
+                merge_sort(self, 0, len(self.array) - 1)
+            elif option_variable.get() == "Shell Sort":
+                shell_sort(self)
+            elif option_variable.get() == "Selection Sort":
+                selection_sort(self)
+            self.create_visual("green")
         go_button = Button(self.screen, text = "GO!", command = button_callback)
         label = Label(self.screen, text = "Amount of items:\n(MAX: 500)")
         label.place(x = 300, y = 10)
         spin.place(x = 400, y = 12)
         option_menu.place(x = 550, y = 7)
         go_button.place(x = 675, y = 9)
-        self.canvas = Canvas(self.screen, bg = "black", width = self.width, height = self.height)
+        self.canvas = Canvas(self.screen, bg = "white", width = self.width, height = self.height)
         self.array = self.create_rand_list(100)
         self.refresh()
         self.canvas.place(x = 3, y = 50)
@@ -77,27 +80,87 @@ def insertion_sort(window):
             window.array[j + 1] = window.array[j]
             j -= 1
         window.array[j + 1] = temp
-        time.sleep(0.01)
+        time.sleep(0.05)
         window.refresh()
-def quick_sort(window):
-    pass
+def quick_sort(window, low, high):
+    if low < high:
+        # Partition
+        pi = window.array[high]
+        i = low - 1
+        for j in range(low, high):
+            if window.array[j] > pi:
+                i += 1
+                window.array[i], window.array[j] = window.array[j], window.array[i]
+            window.refresh()
+        window.array[i + 1], window.array[high] = window.array[high], window.array[i + 1] 
+        partition = i + 1
+        window.refresh()
+
+        quick_sort(window, low, partition - 1)
+        quick_sort(window, partition + 1, high)
 def bubble_sort(window):
     for i in range(len(window.array) - 1):
         for j in range(len(window.array) - i - 1):
             if window.array[j] < window.array[j + 1]:
-                temp = window.array[j]
-                window.array[j] = window.array[j + 1]
-                window.array[j + 1] = temp
-            time.sleep(0.01)
+                window.array[j], window.array[j + 1] = window.array[j + 1], window.array[j]
             window.refresh()
-
-
+def merge_sort(window, low, high):
+    if low < high:
+        middle = (low + high) // 2
+        merge_sort(window, low, middle)
+        merge_sort(window, middle + 1, high)
+        # Merge
+        i = low 
+        j = middle + 1
+        temp_arr = []   
+        while i <= middle and j <= high:   
+            if window.array[i] > window.array[j]: 
+                temp_arr.append(window.array[i]) 
+                i += 1
+            else: 
+                temp_arr.append(window.array[j]) 
+                j += 1
+            window.refresh()
+        while i <= middle:   
+            temp_arr.append(window.array[i]) 
+            i += 1
+            window.refresh()
+        while j <= high:  
+            temp_arr.append(window.array[j]) 
+            j += 1
+            window.refresh()
+        j = 0       
+        for i in range(low, high + 1):   
+            window.array[i] = temp_arr[j] 
+            j += 1 
+            window.refresh()
+def shell_sort(window):
+    gap = len(window.array) // 2
+    while gap > 0:
+        for i in range(gap, len(window.array)):
+            temp = window.array[i]
+            j = i
+            while (j >= gap and window.array[j - gap] < temp):
+                window.array[j] = window.array[j - gap]
+                j -= gap
+                window.refresh()
+            window.array[j] = temp
+            window.refresh()
+        gap = gap // 2
+def selection_sort(window):
+    for i in range(len(window.array) - 1):
+        low = i
+        for j in range(i + 1, len(window.array)):
+            if window.array[j] > window.array[low]:
+                low = j
+        window.array[low], window.array[i] = window.array[i], window.array[low]
+        time.sleep(0.05)
+        window.refresh()
 
 def main():
     screen = Tk()
     screen.geometry("1010x565")
     gui = window(screen, 1000, 500)
     gui.create_window()
-
 
 main()
