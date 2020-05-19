@@ -5,6 +5,8 @@
 # list of random numbers. The user will select the algorithm and the amount of
 # numbers to be sorted.
 
+#TODO GRAY OUT BUTTONS UNTIL THE ALGORITHM FINISHES
+
 from tkinter import *
 import random
 import time
