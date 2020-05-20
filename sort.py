@@ -116,6 +116,7 @@ def quick_sort(window, low, high):
         partition = i + 1
         quick_sort(window, low, partition - 1)
         quick_sort(window, partition + 1, high)
+        window.refresh()
 def bubble_sort(window):
     for i in range(len(window.array) - 1):
         for j in range(len(window.array) - i - 1):
