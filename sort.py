@@ -1,5 +1,5 @@
 # Kyle Arrowood
-# 5/19/2020
+# 6/8/2020
 # A sorting visualizer
 # This program will show how different sorting algorithms work on an unsorted
 # list of random numbers. The user will select the algorithm and the amount of
@@ -66,6 +66,7 @@ class window:
                 selection_sort(self)
             elif option_variable.get() == "Heap Sort":
                 heap_sort(self)
+            self.refresh()
             self.create_visual("green")
             go_button["state"] = "normal"
             generate_button["state"] = "normal"
@@ -116,14 +117,13 @@ def quick_sort(window, low, high):
         partition = i + 1
         quick_sort(window, low, partition - 1)
         quick_sort(window, partition + 1, high)
-        window.refresh()
 def bubble_sort(window):
     for i in range(len(window.array) - 1):
         for j in range(len(window.array) - i - 1):
             if window.array[j] < window.array[j + 1]:
                 window.refresh()
                 window.array[j], window.array[j + 1] = (window.array[j + 1],
-                                                        window.array[j]) 
+                                                        window.array[j])
 def merge_sort(window, low, high):
     if low < high:
         middle = (low + high) // 2
